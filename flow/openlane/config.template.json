@@ -4,7 +4,7 @@
       "dir::../../rtl/your_ip_block.sv",
       "dir::../../rtl/top_wrapper.sv"
     ],  
-    "SDC_FILE": "dir::constraints.sdc",
+    "SDC_FILE": "dir::constraints_sky130b.sdc",
     "PLATFORM": "sky130hd",
     "CLOCK_PORT": "clk",
     "CLOCK_PERIOD": 10.0,

@@ -1,0 +1,265 @@
+{
+  "$schema": "https://vyges.com/schema/v1/vyges-metadata.schema.json",
+  "x-version": "1.0.0",
+  "name": "vyges/uart-controller",
+  "version": "1.0.0",
+  "description": "A configurable UART controller with APB interface, FIFO support, and interrupt capabilities for embedded systems.",
+  "license": "Apache-2.0",
+  "template": "vyges-ip-template@1.0.0",
+  "target": ["asic"],
+  "design_type": ["digital"],
+  "maturity": "stable",
+  "created": "2025-01-15T10:30:00Z",
+  "updated": "2025-01-15T10:30:00Z",
+  "source": {
+    "type": "git",
+    "url": "https://github.com/vyges/uart-controller",
+    "commit": "main",
+    "private": false,
+    "containsEncryptedPayload": false,
+    "indexing": true
+  },
+  "maintainers": [
+    {
+      "name": "Shivaram",
+      "email": "shivaram@vyges.com",
+      "github": "vyges"
+    }
+  ],
+  "branding": {
+    "provider": "Vyges",
+    "logo": "https://vyges.com/images/logo.svg",
+    "website": "https://vyges.com/catalog",
+    "usage": "Use of the logo is permitted for attribution or compatibility references only."
+  },
+  "interfaces": [
+    {
+      "type": "bus",
+      "direction": "input",
+      "protocol": "APB",
+      "width": 32,
+      "signals": [
+        { "name": "PCLK_i", "direction": "input", "type": "clock", "description": "APB clock signal (50 MHz)" },
+        { "name": "PRESETn_i", "direction": "input", "type": "reset", "active_level": "low", "description": "APB reset signal (active low)" },
+        { "name": "PSEL_i", "direction": "input", "type": "control", "description": "APB select signal" },
+        { "name": "PENABLE_i", "direction": "input", "type": "control", "description": "APB enable signal" },
+        { "name": "PWRITE_i", "direction": "input", "type": "control", "description": "APB write enable" },
+        { "name": "PADDR_i", "direction": "input", "width": 8, "type": "data", "description": "APB address bus (8-bit)" },
+        { "name": "PWDATA_i", "direction": "input", "width": 32, "type": "data", "description": "APB write data" },
+        { "name": "PRDATA_o", "direction": "output", "width": 32, "type": "data", "description": "APB read data" },
+        { "name": "PREADY_o", "direction": "output", "type": "control", "description": "APB ready signal" },
+        { "name": "PSLVERR_o", "direction": "output", "type": "control", "description": "APB slave error signal" }
+      ]
+    },
+    {
+      "type": "uart",
+      "direction": "bidirectional",
+      "signals": [
+        { "name": "UART_TX_o", "direction": "output", "type": "data", "description": "UART transmit output" },
+        { "name": "UART_RX_i", "direction": "input", "type": "data", "description": "UART receive input" }
+      ]
+    },
+    {
+      "type": "interrupt",
+      "direction": "output",
+      "signals": [
+        { "name": "IRQ_TX_EMPTY_o", "direction": "output", "type": "interrupt", "description": "Transmit FIFO empty interrupt" },
+        { "name": "IRQ_RX_FULL_o", "direction": "output", "type": "interrupt", "description": "Receive FIFO full interrupt" }
+      ]
+    }
+  ],
+  "parameters": [
+    {
+      "name": "CLOCK_FREQUENCY",
+      "type": "int",
+      "default": 50000000,
+      "description": "System clock frequency in Hz",
+      "range": { "min": 1000000, "max": 100000000 },
+      "units": "Hz",
+      "required": false
+    },
+    {
+      "name": "BAUD_RATE",
+      "type": "int",
+      "default": 115200,
+      "description": "UART baud rate in bps",
+      "range": { "min": 9600, "max": 921600 },
+      "units": "bps",
+      "required": false
+    },
+    {
+      "name": "FIFO_DEPTH",
+      "type": "int",
+      "default": 16,
+      "description": "Depth of TX and RX FIFOs",
+      "range": { "min": 4, "max": 64 },
+      "units": "entries",
+      "required": false
+    },
+    {
+      "name": "DATA_WIDTH",
+      "type": "int",
+      "default": 8,
+      "description": "UART data width in bits",
+      "range": { "min": 5, "max": 8 },
+      "units": "bits",
+      "required": false
+    },
+    {
+      "name": "STOP_BITS",
+      "type": "int",
+      "default": 1,
+      "description": "Number of stop bits",
+      "range": { "min": 1, "max": 2 },
+      "units": "bits",
+      "required": false
+    },
+    {
+      "name": "PARITY_ENABLE",
+      "type": "bool",
+      "default": false,
+      "description": "Enable parity checking",
+      "required": false
+    },
+    {
+      "name": "PARITY_TYPE",
+      "type": "string",
+      "default": "even",
+      "description": "Parity type (even/odd/none)",
+      "enum": ["even", "odd", "none"],
+      "required": false
+    }
+  ],
+  "test": {
+    "coverage": true,
+    "testbenches": ["cocotb", "systemverilog"],
+    "simulators": ["verilator", "iverilog"],
+    "status": "passing",
+    "coverage_targets": {
+      "functional": 95,
+      "code": 90,
+      "toggle": 100,
+      "fsm": 100
+    },
+    "test_files": {
+      "systemverilog": "tb/tb_uart_controller.sv",
+      "verilator": "tb/verilator/tb_uart_controller_verilator.sv",
+      "cocotb": "tb/cocotb/test_uart_controller.py"
+    },
+    "simulation_directories": {
+      "verilator": "sim/verilator/",
+      "cocotb": "sim/cocotb/"
+    }
+  },
+  "flows": {
+    "verilator": {
+      "status": "verified",
+      "testbench": "tb/verilator/tb_uart_controller_verilator.sv",
+      "simulation": "sim/verilator/sim_main.cpp"
+    },
+    "cocotb": {
+      "status": "verified",
+      "testbench": "tb/cocotb/test_uart_controller.py",
+      "simulation": "sim/cocotb/Makefile",
+      "simulators": ["icarus", "verilator", "modelsim", "vcs", "xcelium"]
+    },
+    "openlane": {
+      "pdks": ["sky130B"],
+      "status": "tested",
+      "config": "flow/openlane/config_sky130b.json",
+      "constraints": "flow/openlane/constraints_sky130b.sdc",
+      "pin_order": "flow/openlane/pin_order_sky130b.cfg",
+      "floorplan": "flow/openlane/floorplan_sky130b.tcl"
+    }
+  },
+  "asic": {
+    "flavor": "digital",
+    "pdks": ["sky130B"],
+    "synthesis_tool": "openlane",
+    "clock_freq_mhz": 50,
+    "constraints": ["flow/openlane/constraints_sky130b.sdc"],
+    "tools": ["yosys", "openroad", "magic", "klayout"],
+    "area_mm2": 0.1,
+    "power_mw": 5.0,
+    "leakage_power_uw": 1.0,
+    "die_area": "1000x1000",
+    "core_utilization": 0.8,
+    "metal_layers": ["li1", "met1", "met2", "met3", "met4", "met5"],
+    "supply_voltage": 1.8
+  },
+  "fpga": {
+    "toolchain": "vivado",
+    "board": "arty-a7-35",
+    "cfu_playground_compatible": true,
+    "constraints": ["constraints.xdc"]
+  },
+  "integration": {
+    "examples": [
+      {
+        "target": "simulation",
+        "wrapper": "integration/uart_wrapper.v",
+        "tb": "integration/uart_tb.v"
+      },
+      {
+        "target": "asic",
+        "wrapper": "integration/uart_asic_wrapper.v",
+        "tb": "integration/uart_asic_tb.v"
+      }
+    ],
+    "rtl_modules": [
+      "rtl/uart_controller.sv",
+      "rtl/sync_fifo.sv",
+      "rtl/uart_transmitter.sv",
+      "rtl/uart_receiver.sv"
+    ],
+    "documentation": [
+      "README.md",
+      "docs/overview.md",
+      "docs/architecture.md",
+      "docs/UART_design_spec.md"
+    ]
+  },
+  "automation": {
+    "automation_level": "enhanced",
+    "minimal_required": ["name", "version", "license", "interfaces", "template", "target", "design_type", "maturity", "description", "source", "asic", "test", "flows"],
+    "recommended_for_automation": ["parameters", "dependencies", "toolRequirements", "performance", "reliability", "packaging", "community"],
+    "blocking_issues": [],
+    "makefiles": {
+      "simulation": "sim/Makefile",
+      "cocotb": "sim/cocotb/Makefile",
+      "openlane": "flow/openlane/Makefile"
+    },
+    "build_targets": {
+      "verilator": "make verilator",
+      "icarus": "make icarus", 
+      "cocotb": "make cocotb",
+      "openlane": "make sky130b"
+    }
+  },
+  "meta": {
+    "template": {
+      "generator": "vyges-cli",
+      "init_tool": "vyges-cli", 
+      "template_version": "1.0.0",
+      "generated_at": "2025-01-15T10:30:00Z"
+    },
+    "generated_by": "vyges-cli",
+    "schema": {
+      "version": "1.0.0",
+      "compatible_versions": ["1.0.0", "1.1.0"],
+      "generated_with": "vyges-cli"
+    }
+  },
+  "categories": ["peripheral", "controller", "communication"],
+  "tags": ["uart", "serial", "apb", "fifo", "interrupt", "communication", "sky130b", "openlane"],
+  "keywords": ["uart", "serial", "communication", "apb", "fifo", "interrupt", "controller", "skywater", "pdk", "asic"],
+  "pdk": {
+    "name": "sky130B",
+    "source": "https://github.com/google/skywater-pdk",
+    "version": "latest",
+    "technology": "130nm",
+    "supply_voltage": 1.8,
+    "metal_layers": 5,
+    "standard_cells": "sky130_fd_sc_hd"
+  }
+} 

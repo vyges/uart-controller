@@ -17,14 +17,14 @@
 
 
 # Design name
-DESIGN_NAME := top_wrapper
+DESIGN_NAME := uart_controller
 
 # Paths
 FLOW_DIR := $(shell pwd)
 OPENLANE_ROOT ?= $(HOME)/OpenLane
-PDK := sky130A
+PDK := sky130B
 PDK_ROOT ?= $(HOME)/pdks
-CONFIG_FILE := config.json
+CONFIG_FILE := config_sky130b.json
 
 # Docker image/tag (change if using a different version)
 OPENLANE_DOCKER_IMAGE := openlane:latest
@@ -40,10 +40,26 @@ DOCKER_CMD := docker run -it --rm \
 	-u $(shell id -u):$(shell id -g) \
 	$(OPENLANE_DOCKER_IMAGE)
 
-.PHONY: run clean final
+.PHONY: run clean final sky130a sky130b help
 
 ## Run the OpenLane flow
 run:
+	$(DOCKER_CMD) bash -c \
+		"cd /openlane && \
+		 flow.tcl -design /project -override_config_file /project/$(CONFIG_FILE)"
+
+## Run with Sky130A PDK
+sky130a:
+	$(eval CONFIG_FILE := config_sky130a.json)
+	$(eval PDK := sky130A)
+	$(DOCKER_CMD) bash -c \
+		"cd /openlane && \
+		 flow.tcl -design /project -override_config_file /project/$(CONFIG_FILE)"
+
+## Run with Sky130B PDK
+sky130b:
+	$(eval CONFIG_FILE := config_sky130b.json)
+	$(eval PDK := sky130B)
 	$(DOCKER_CMD) bash -c \
 		"cd /openlane && \
 		 flow.tcl -design /project -override_config_file /project/$(CONFIG_FILE)"
@@ -61,3 +77,22 @@ final:
 ## Clean all generated output
 clean:
 	rm -rf runs final
+
+## Show help
+help:
+	@echo "OpenLane Flow Makefile for UART Controller"
+	@echo ""
+	@echo "Available targets:"
+	@echo "  run        - Run OpenLane flow with default config ($(CONFIG_FILE))"
+	@echo "  sky130a    - Run OpenLane flow with Sky130A PDK"
+	@echo "  sky130b    - Run OpenLane flow with Sky130B PDK (default)"
+	@echo "  final      - Collect final results in final/ directory"
+	@echo "  clean      - Clean all generated files"
+	@echo "  help       - Show this help message"
+	@echo ""
+	@echo "Configuration:"
+	@echo "  DESIGN_NAME: $(DESIGN_NAME)"
+	@echo "  PDK: $(PDK)"
+	@echo "  CONFIG_FILE: $(CONFIG_FILE)"
+	@echo "  OPENLANE_ROOT: $(OPENLANE_ROOT)"
+	@echo "  PDK_ROOT: $(PDK_ROOT)"

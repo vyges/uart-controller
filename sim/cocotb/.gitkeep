@@ -1,0 +1,2 @@
+# This file ensures the cocotb simulation directory is tracked in git
+# Cocotb simulation setup for UART Controller IP 
